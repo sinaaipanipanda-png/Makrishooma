@@ -1,0 +1,16 @@
+{
+  "name": "makrishooma",
+  "version": "1.0.0",
+  "description": "Makrishooma Online Game",
+  "main": "server-makrishooma.js",
+  "scripts": {
+    "start": "node server-makrishooma.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
