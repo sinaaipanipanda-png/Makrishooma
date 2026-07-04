@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>جنگ جهانی ماکریشوما | بازی</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="css/game-makrishooma.css">
+
+</head>
+
+<body>
+
+<div class="background"></div>
+
+<div class="overlay"></div>
+
+<div class="container">
+
+<header>
+
+<h1>
+🌍 جنگ جهانی ماکریشوما 🌍
+</h1>
+
+<p class="welcome">
+
+بازیکن:
+<span id="playerName"></span>
+
+</p>
+
+<div class="turnBox">
+
+نوبت:
+
+<span id="currentTurn">
+
+🇮🇷 ایران
+
+</span>
+
+</div>
+
+</header>
+
+<section class="players">
+
+<div class="playerCard" id="iranCard">
+
+<h2>
+
+🇮🇷 ایران
+
+</h2>
+
+<div class="healthBar">
+
+<div id="iranHealthBar"></div>
+
+</div>
+
+<p>
+
+سلامت:
+
+<span id="iranHealth">
+
+100%
+
+</span>
+
+</p>
+
+<p>
+
+🚀 موشک:
+
+<span id="iranMissiles">
+
+100
+
+</span>
+
+</p>
+
+<p>
+
+💣 بمب:
+
+<span id="iranBombs">
+
+55
+
+</span>
+
+</p>
+
+<p>
+
+☢️ بمب اتم:
+
+<span id="iranNukes">
+
+5
+
+</span>
+
+</p>
+
+<p>
+
+💰 پول:
+
+<span id="iranMoney">
+
+100
+
+</span>
+
+پک
+
+</p>
+
+</div>
+
+<div class="playerCard" id="chinaCard">
+
+<h2>
+
+🇨🇳 چین
+
+</h2>
+
+<div class="healthBar">
+
+<div id="chinaHealthBar"></div>
+
+</div>
+
+<p>
+
+سلامت:
+
+<span id="chinaHealth">
+
+100%
+
+</span>
+
+</p>
+
+<p>
+
+🚀 موشک:
+
+<span id="chinaMissiles">
+
+100
+
+</span>
+
+</p>
+
+<p>
+
+💣 بمب:
+
+<span id="chinaBombs">
+
+45
+
+</span>
+
+</p>
+
+<p>
+
+☢️ بمب اتم:
+
+<span id="chinaNukes">
+
+5
+
+</span>
+
+</p>
+
+<p>
+
+💰 پول:
+
+<span id="chinaMoney">
+
+100
+
+</span>
+
+پک
+
+</p>
+
+</div>
+
+<div class="playerCard" id="kazakhstanCard">
+
+<h2>
+
+🇰🇿 قزاقستان
+
+</h2>
+
+<div class="healthBar">
+
+<div id="kazHealthBar"></div>
+
+</div>
+
+<p>
+
+سلامت:
+
+<span id="kazHealth">
+
+100%
+
+</span>
+
+</p>
+
+<p>
+
+🚀 موشک:
+
+<span id="kazMissiles">
+
+100
+
+</span>
+
+</p>
+
+<p>
+
+💣 بمب:
+
+<span id="kazBombs">
+
+45
+
+</span>
+
+</p>
+
+<p>
+
+☢️ بمب اتم:
+
+<span id="kazNukes">
+
+4
+
+</span>
+
+</p>
+
+<p>
+
+💰 پول:
+
+<span id="kazMoney">
+
+100
+
+</span>
+
+پک
+
+</p>
+
+</div>
+
+</section>
+
+<hr>
+
+<section class="attackSection">
+
+<h2>
+
+🎯 مرکز فرماندهی حمله
+
+</h2>
+<div class="attackBox">
+
+<label for="target">
+
+🎯 انتخاب هدف
+
+</label>
+
+<select id="target">
+
+<option value="iran">🇮🇷 ایران</option>
+
+<option value="china">🇨🇳 چین</option>
+
+<option value="kazakhstan">🇰🇿 قزاقستان</option>
+
+</select>
+
+<br><br>
+
+<label for="attackCount">
+
+🔢 تعداد شلیک
+
+</label>
+
+<input
+type="number"
+id="attackCount"
+min="1"
+value="1"
+placeholder="تعداد">
+
+<br><br>
+
+<div class="weaponButtons">
+
+<button id="missileBtn">
+
+🚀 شلیک موشک
+
+</button>
+
+<button id="bombBtn">
+
+💣 پرتاب بمب
+
+</button>
+
+<button id="nukeBtn">
+
+☢️ پرتاب بمب اتم
+
+</button>
+
+</div>
+
+</div>
+
+<hr>
+
+<section class="shopSection">
+
+<h2>
+
+🛒 فروشگاه نظامی
+
+</h2>
+
+<div class="shopItems">
+
+<div class="shopCard">
+
+<h3>
+
+🚀 موشک
+
+</h3>
+
+<p>
+
+قدرت:
+0.5٪
+
+</p>
+
+<p>
+
+قیمت:
+5 پک
+
+</p>
+
+<button id="buyMissile">
+
+خرید
+
+</button>
+
+</div>
+
+<div class="shopCard">
+
+<h3>
+
+💣 بمب
+
+</h3>
+
+<p>
+
+قدرت:
+1٪
+
+</p>
+
+<p>
+
+قیمت:
+10 پک
+
+</p>
+
+<button id="buyBomb">
+
+خرید
+
+</button>
+
+</div>
+
+<div class="shopCard">
+
+<h3>
+
+☢️ بمب اتم
+
+</h3>
+
+<p>
+
+قدرت:
+7٪
+
+</p>
+
+<p>
+
+قیمت:
+30 پک
+
+</p>
+
+<button id="buyNuke">
+
+خرید
+
+</button>
+
+</div>
+
+</div>
+
+</section>
+
+<hr>
+<section class="communicationSection">
+
+<h2>
+
+🎙 ارتباط بین بازیکنان
+
+</h2>
+
+<div class="voiceBox">
+
+<h3>
+
+🎤 گفت‌وگوی صوتی
+
+</h3>
+
+<button id="voiceStart">
+
+🎙 روشن کردن میکروفون
+
+</button>
+
+<button id="voiceStop">
+
+🔇 خاموش کردن میکروفون
+
+</button>
+
+<p id="voiceStatus">
+
+وضعیت: خاموش
+
+</p>
+
+</div>
+
+<br>
+
+<div class="videoBox">
+
+<h3>
+
+📹 وبکم
+
+</h3>
+
+<video
+id="camera"
+autoplay
+playsinline
+muted>
+
+</video>
+
+<br><br>
+
+<button id="cameraStart">
+
+📹 روشن کردن وبکم
+
+</button>
+
+<button id="cameraStop">
+
+📷 خاموش کردن وبکم
+
+</button>
+
+<p id="cameraStatus">
+
+وضعیت: خاموش
+
+</p>
+
+</div>
+
+</section>
+
+<hr>
+
+<section class="gameInfo">
+
+<h2>
+
+📊 اطلاعات بازی
+
+</h2>
+
+<div class="infoCard">
+
+<p>
+
+👥 بازیکنان:
+<span id="playerCount">
+3
+</span>
+
+</p>
+
+<p>
+
+🎮 بازیکن فعال:
+<span id="activePlayer">
+🇮🇷 ایران
+</span>
+
+</p>
+
+<p>
+
+🏆 وضعیت بازی:
+<span id="gameStatus">
+در حال اجرا
+</span>
+
+</p>
+
+<p>
+
+⏳ زمان نوبت:
+<span id="turnTimer">
+60
+</span>
+ثانیه
+
+</p>
+
+</div>
+
+</section>
+
+<hr>
+
+<section class="logsSection">
+
+<h2>
+
+📜 گزارش نبرد
+
+</h2>
+
+<div id="logs">
+
+هنوز حمله‌ای انجام نشده است...
+
+</div>
+
+</section>
+
+<hr>
+<section class="rankingSection">
+
+<h2>
+
+🏆 رتبه‌بندی
+
+</h2>
+
+<table id="rankingTable">
+
+<thead>
+
+<tr>
+
+<th>رتبه</th>
+
+<th>کشور</th>
+
+<th>سلامت</th>
+
+<th>موشک</th>
+
+<th>بمب</th>
+
+<th>بمب اتم</th>
+
+<th>پول</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>1</td>
+
+<td id="rankCountry1">🇮🇷 ایران</td>
+
+<td id="rankHealth1">100%</td>
+
+<td id="rankMissile1">100</td>
+
+<td id="rankBomb1">55</td>
+
+<td id="rankNuke1">5</td>
+
+<td id="rankMoney1">100</td>
+
+</tr>
+
+<tr>
+
+<td>2</td>
+
+<td id="rankCountry2">🇨🇳 چین</td>
+
+<td id="rankHealth2">100%</td>
+
+<td id="rankMissile2">100</td>
+
+<td id="rankBomb2">45</td>
+
+<td id="rankNuke2">5</td>
+
+<td id="rankMoney2">100</td>
+
+</tr>
+
+<tr>
+
+<td>3</td>
+
+<td id="rankCountry3">🇰🇿 قزاقستان</td>
+
+<td id="rankHealth3">100%</td>
+
+<td id="rankMissile3">100</td>
+
+<td id="rankBomb3">45</td>
+
+<td id="rankNuke3">4</td>
+
+<td id="rankMoney3">100</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</section>
+
+<hr>
+
+<section class="winnerSection">
+
+<h2>
+
+👑 برنده بازی
+
+</h2>
+
+<h1 id="winnerText">
+
+هنوز برنده‌ای مشخص نشده است.
+
+</h1>
+
+</section>
+
+<div id="spectatorMode" style="display:none;">
+
+<h2>
+
+👀 حالت تماشاگر
+
+</h2>
+
+<p>
+
+شما از بازی حذف شده‌اید و فقط می‌توانید ادامه بازی را مشاهده کنید.
+
+</p>
+
+</div>
+
+<script src="js/game-makrishooma.js"></script>
+<script src="js/turn-makrishooma.js"></script>
+<script src="js/attack-makrishooma.js"></script>
+<script src="js/shop-makrishooma.js"></script>
+<script src="js/voice-makrishooma.js"></script>
+<script src="js/video-makrishooma.js"></script>
+<script src="js/ui-makrishooma.js"></script>
+
+</body>
+
+</html>

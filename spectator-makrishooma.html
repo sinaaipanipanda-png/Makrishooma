@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>حالت تماشاگر | جنگ جهانی ماکریشوما</title>
+
+<link rel="stylesheet" href="css/game-makrishooma.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="background"></div>
+
+<div class="overlay"></div>
+
+<div class="container">
+
+<h1>👀 حالت تماشاگر</h1>
+
+<p>
+شما از بازی حذف شده‌اید.
+</p>
+
+<p>
+می‌توانید سلاح خریداری کنید و دوباره به بازی برگردید.
+</p>
+
+<hr>
+
+<div class="playerCard">
+
+<h2>💰 فروشگاه بازگشت</h2>
+
+<p>
+
+پول شما:
+<span id="money">
+100
+</span>
+پک
+
+</p>
+
+<p>
+
+🚀 موشک:
+<span id="missiles">
+0
+</span>
+
+</p>
+
+<p>
+
+💣 بمب:
+<span id="bombs">
+0
+</span>
+
+</p>
+
+<p>
+
+☢️ بمب اتم:
+<span id="nukes">
+0
+</span>
+
+</p>
+
+<hr>
+
+<button id="buy10Missiles">
+
+🚀 خرید ۱۰ موشک (۵۰ پک)
+
+</button>
+
+<br><br>
+
+<button id="buy2Bombs">
+
+💣 خرید ۲ بمب (۲۰ پک)
+
+</button>
+
+<br><br>
+
+<button id="buy1Nuke">
+
+☢️ خرید ۱ بمب اتم (۳۰ پک)
+
+</button>
+
+<hr>
+
+<button id="returnGame" disabled>
+
+🎮 بازگشت به بازی
+
+</button>
+
+<p id="returnMessage">
+
+برای بازگشت باید حداقل یکی از شرایط زیر را داشته باشید:
+
+<br><br>
+
+✅ ۱۰ موشک
+
+<br>
+
+یا
+
+<br>
+
+✅ ۲ بمب
+
+<br>
+
+یا
+
+<br>
+
+✅ ۱ بمب اتم
+
+</p>
+
+</div>
+
+<hr>
+
+<h2>📜 مشاهده ادامه بازی</h2>
+
+<div id="logs">
+
+در حال دریافت اطلاعات...
+
+</div>
+
+</div>
+
+<script src="js/spectator-makrishooma.js"></script>
+
+</body>
+
+</html>

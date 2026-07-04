@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ورود | جنگ جهانی ماکریشوما</title>
+
+<link rel="stylesheet" href="css/login-makrishooma.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="background"></div>
+
+<div class="overlay"></div>
+
+<div class="login-box">
+
+<h1>🔐 ورود به بازی</h1>
+
+<p>نام کاربری و رمز عبور خود را وارد کنید.</p>
+
+<form id="loginForm">
+
+<input
+type="text"
+id="username"
+placeholder="نام کاربری"
+required>
+
+<input
+type="password"
+id="password"
+placeholder="رمز عبور"
+required>
+
+<button type="submit">
+ورود به بازی
+</button>
+
+</form>
+
+<p id="errorMessage"></p>
+
+<button id="backHome">
+🏠 بازگشت
+</button>
+
+</div>
+
+<script>
+
+const users = [
+{
+username: "alikhodadady",
+password: "1801"
+},
+{
+username: "takinakbary",
+password: "5108"
+},
+{
+username: "sinaayati",
+password: "4023"
+}
+];
+
+document.getElementById("loginForm").addEventListener("submit", function(e){
+
+e.preventDefault();
+
+const username = document.getElementById("username").value.trim();
+const password = document.getElementById("password").value.trim();
+
+const user = users.find(u =>
+u.username === username &&
+u.password === password
+);
+
+if(user){
+
+localStorage.setItem("loggedUser", username);
+
+window.location.href = "lobby-makrishooma.html";
+
+}else{
+
+document.getElementById("errorMessage").innerHTML =
+"❌ نام کاربری یا رمز عبور اشتباه است.";
+
+}
+
+});
+
+document.getElementById("backHome").addEventListener("click", function(){
+
+window.location.href = "home-makrishooma.html";
+
+});
+
+</script>
+
+</body>
+
+</html>

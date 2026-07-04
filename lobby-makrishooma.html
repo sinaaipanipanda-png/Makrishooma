@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>لابی | جنگ جهانی ماکریشوما</title>
+
+<link rel="stylesheet" href="css/lobby-makrishooma.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="background"></div>
+
+<div class="overlay"></div>
+
+<div class="lobby">
+
+<h1>🌍 لابی جنگ جهانی ماکریشوما</h1>
+
+<h2>در انتظار ورود بازیکنان...</h2>
+
+<div class="players">
+
+<div class="player" id="player1">
+👤 بازیکن اول
+<span class="status waiting">⏳ منتظر...</span>
+</div>
+
+<div class="player" id="player2">
+👤 بازیکن دوم
+<span class="status waiting">⏳ منتظر...</span>
+</div>
+
+<div class="player" id="player3">
+👤 بازیکن سوم
+<span class="status waiting">⏳ منتظر...</span>
+</div>
+
+</div>
+
+<div class="counter">
+تعداد بازیکنان آنلاین:
+<span id="onlineCount">1</span>
+/3
+</div>
+
+<p id="message">
+پس از ورود هر ۳ بازیکن، بازی به صورت خودکار آغاز می‌شود.
+</p>
+
+<button id="leave">
+🚪 خروج از لابی
+</button>
+
+</div>
+
+<script>
+
+const loggedUser = localStorage.getItem("loggedUser");
+
+let players = JSON.parse(localStorage.getItem("players")) || [];
+
+if(!players.includes(loggedUser)){
+players.push(loggedUser);
+localStorage.setItem("players",JSON.stringify(players));
+}
+
+document.getElementById("onlineCount").textContent = players.length;
+
+for(let i=0;i<players.length;i++){
+
+document.getElementById("player"+(i+1)).innerHTML=
+"👤 "+players[i]+
+' <span style="color:lime;">✅ آماده</span>';
+
+}
+
+if(players.length>=3){
+
+document.getElementById("message").innerHTML=
+"🎮 همه بازیکنان وارد شدند. انتقال به انتخاب کشور...";
+
+setTimeout(function(){
+
+window.location.href="select-country-makrishooma.html";
+
+},3000);
+
+}
+
+document.getElementById("leave").onclick=function(){
+
+players=players.filter(p=>p!==loggedUser);
+
+localStorage.setItem("players",JSON.stringify(players));
+
+localStorage.removeItem("loggedUser");
+
+window.location.href="login-makrishooma.html";
+
+}
+
+</script>
+
+</body>
+
+</html>

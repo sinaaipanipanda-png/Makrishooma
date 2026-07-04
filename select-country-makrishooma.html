@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>انتخاب کشور | جنگ جهانی ماکریشوما</title>
+
+<link rel="stylesheet" href="css/select-country-makrishooma.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="background"></div>
+
+<div class="overlay"></div>
+
+<div class="container">
+
+<h1>🌍 انتخاب کشور</h1>
+
+<p>کشور مورد نظر خود را انتخاب کنید.</p>
+
+<div class="countries">
+
+<div class="country" onclick="selectCountry('آمریکا')">
+
+<h2>🇮🇷 ایران</h2>
+
+<p>سلامت: <b>100%</b></p>
+
+<p>🚀 موشک: 100</p>
+
+<p>💣 بمب: 55</p>
+
+<p>☢️ بمب اتم: 5</p>
+
+<p>💰 پول: 100 پک</p>
+
+</div>
+
+<div class="country" onclick="selectCountry('چین')">
+
+<h2>🇨🇳 چین</h2>
+
+<p>سلامت: <b>100%</b></p>
+
+<p>🚀 موشک: 100</p>
+
+<p>💣 بمب: 45</p>
+
+<p>☢️ بمب اتم: 5</p>
+
+<p>💰 پول: 100 پک</p>
+
+</div>
+
+<div class="country" onclick="selectCountry('قزاقستان')">
+
+<h2>🇰🇿 قزاقستان</h2>
+
+<p>سلامت: <b>100%</b></p>
+
+<p>🚀 موشک: 100</p>
+
+<p>💣 بمب: 45</p>
+
+<p>☢️ بمب اتم: 4</p>
+
+<p>💰 پول: 100 پک</p>
+
+</div>
+
+</div>
+
+<p id="message"></p>
+
+</div>
+
+<script>
+
+const username = localStorage.getItem("loggedUser");
+
+let selectedCountries = JSON.parse(localStorage.getItem("selectedCountries")) || {};
+
+function selectCountry(country){
+
+if(Object.values(selectedCountries).includes(country)){
+
+document.getElementById("message").innerHTML="❌ این کشور قبلاً انتخاب شده است.";
+
+return;
+
+}
+
+selectedCountries[username]={
+country:country,
+health:100,
+money:100,
+missiles:100,
+bombs:country==="ایران"?55:45,
+nukes:country==="قزاقستان"?4:5
+};
+
+localStorage.setItem("selectedCountries",JSON.stringify(selectedCountries));
+
+document.getElementById("message").innerHTML="✅ کشور انتخاب شد. در انتظار سایر بازیکنان...";
+
+if(Object.keys(selectedCountries).length>=3){
+
+setTimeout(function(){
+
+window.location.href="game-makrishooma.html";
+
+},1500);
+
+}
+
+}
+
+</script>
+
+</body>
+
+</html>

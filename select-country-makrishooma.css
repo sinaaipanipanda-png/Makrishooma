@@ -1,0 +1,139 @@
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:"Vazirmatn",sans-serif;
+}
+
+html,body{
+width:100%;
+height:100%;
+background:#06111d;
+color:#fff;
+overflow-x:hidden;
+}
+
+body{
+background:
+linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.75)),
+url("../assets/images/background-makrishooma.jpg");
+background-size:cover;
+background-position:center;
+background-attachment:fixed;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:30px;
+}
+
+.background{
+position:fixed;
+inset:0;
+z-index:-2;
+}
+
+.overlay{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.35);
+backdrop-filter:blur(6px);
+z-index:-1;
+}
+
+.container{
+width:100%;
+max-width:1200px;
+padding:35px;
+background:rgba(255,255,255,.08);
+border:1px solid rgba(255,255,255,.15);
+backdrop-filter:blur(18px);
+border-radius:25px;
+box-shadow:0 0 40px rgba(0,0,0,.45);
+text-align:center;
+animation:fadeIn .8s;
+}
+
+.container h1{
+font-size:42px;
+color:#ffd54f;
+margin-bottom:10px;
+}
+
+.container p{
+font-size:18px;
+margin-bottom:25px;
+color:#ddd;
+}
+
+.countries{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+gap:25px;
+margin-top:25px;
+}
+
+.country{
+background:rgba(255,255,255,.08);
+border:1px solid rgba(255,255,255,.12);
+border-radius:20px;
+padding:25px;
+cursor:pointer;
+transition:.3s;
+}
+
+.country:hover{
+transform:translateY(-10px) scale(1.03);
+background:rgba(255,255,255,.12);
+box-shadow:0 0 30px rgba(255,255,255,.15);
+}
+
+.country h2{
+font-size:32px;
+margin-bottom:20px;
+color:#4fc3f7;
+}
+
+.country p{
+margin:10px 0;
+font-size:18px;
+color:#fff;
+}
+
+#message{
+margin-top:30px;
+font-size:20px;
+font-weight:700;
+color:#00e676;
+min-height:30px;
+}
+
+@keyframes fadeIn{
+from{
+opacity:0;
+transform:translateY(30px);
+}
+to{
+opacity:1;
+transform:translateY(0);
+}
+}
+
+@media(max-width:700px){
+
+.container{
+padding:20px;
+}
+
+.container h1{
+font-size:30px;
+}
+
+.country h2{
+font-size:26px;
+}
+
+.country p{
+font-size:16px;
+}
+
+}
