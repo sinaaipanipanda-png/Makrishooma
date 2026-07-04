@@ -664,5 +664,3 @@ io.on("connection", (socket) => {
         io.emit("player-update", players);
 
     });
-    });
-  
