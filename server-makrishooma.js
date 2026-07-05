@@ -7,10 +7,10 @@ const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-    }
+cors: {
+origin: "*",
+methods: ["GET", "POST"]
+}
 });
 
 const PORT = process.env.PORT || 3000;
@@ -20,62 +20,62 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(__dirname));
 
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "home-makrishooma.html"));
+res.sendFile(path.join(__dirname, "home-makrishooma.html"));
 });
 
 // ================= USERS =================
 
 const USERS = {
-    alikhodadady: "1801",
-    takinakbary: "5108",
-    sinaayati: "4023"
+alikhodadady: "1801",
+takinakbary: "5108",
+sinaayati: "4023"
 };
 
 // ================= COUNTRIES =================
 
 const COUNTRIES = {
 
-    iri: {
-        name: "🇮🇷 ایران",
-        health: 100,
-        missiles: 100,
-        bombs: 55,
-        nukes: 5,
-        money: 100
-    },
+iri: {
+name: "🇮🇷 ایران",
+health: 100,
+missiles: 100,
+bombs: 55,
+nukes: 5,
+money: 100
+},
 
-    china: {
-        name: "🇨🇳 چین",
-        health: 100,
-        missiles: 100,
-        bombs: 45,
-        nukes: 5,
-        money: 100
-    },
+china: {
+name: "🇨🇳 چین",
+health: 100,
+missiles: 100,
+bombs: 45,
+nukes: 5,
+money: 100
+},
 
-    kazakhstan: {
-        name: "🇰🇿 قزاقستان",
-        health: 100,
-        missiles: 100,
-        bombs: 45,
-        nukes: 4,
-        money: 100
-    }
+kazakhstan: {
+name: "🇰🇿 قزاقستان",
+health: 100,
+missiles: 100,
+bombs: 45,
+nukes: 4,
+money: 100
+}
 
 };
 
 // ================= CONFIG =================
 
 const DAMAGE = {
-    missile: 0.5,
-    bomb: 1,
-    nuke: 7
+missile: 0.5,
+bomb: 1,
+nuke: 7
 };
 
 const PRICE = {
-    missile: 5,
-    bomb: 10,
-    nuke: 30
+missile: 5,
+bomb: 10,
+nuke: 30
 };
 
 // ================= GAME STATE =================
@@ -90,40 +90,40 @@ let gameStarted = false;
 
 function broadcastLobby() {
 
-    io.emit("lobby-update", {
-        players: lobby,
-        started: gameStarted
-    });
+io.emit("lobby-update", {
+players: lobby,
+started: gameStarted
+});
 
 }
 
 function currentTurn() {
-    return turnOrder[turnIndex] || null;
+return turnOrder[turnIndex] || null;
 }
 
 function advanceTurn() {
 
-    if (turnOrder.length === 0) return;
+if (turnOrder.length === 0) return;
 
-    let safe = 0;
+let safe = 0;
 
-    do {
+do {
 
-        turnIndex++;
+turnIndex++;
 
-        if (turnIndex >= turnOrder.length) {
-            turnIndex = 0;
-        }
+if (turnIndex >= turnOrder.length) {
+turnIndex = 0;
+}
 
-        safe++;
+safe++;
 
-    } while (
-        safe < 100 &&
-        players[turnOrder[turnIndex]] &&
-        players[turnOrder[turnIndex]].eliminated
-    );
+} while (
+safe < 100 &&
+players[turnOrder[turnIndex]] &&
+players[turnOrder[turnIndex]].eliminated
+);
 
-    io.emit("turn-update", currentTurn());
+io.emit("turn-update", currentTurn());
 
 }
 
@@ -131,10 +131,10 @@ function advanceTurn() {
 
 server.listen(PORT, () => {
 
-    console.log("==================================");
-    console.log("🌍 Makrishooma Server Started");
-    console.log("🚀 Port:", PORT);
-    console.log("==================================");
+console.log("==================================");
+console.log("🌍 Makrishooma Server Started");
+console.log("🚀 Port:", PORT);
+console.log("==================================");
 
 });
 
@@ -142,288 +142,294 @@ server.listen(PORT, () => {
 
 io.on("connection", (socket) => {
 
-    console.log("🟢 Connected:", socket.id);
-        // ================= LOGIN =================
+console.log("🟢 Connected:", socket.id);
+// ================= LOGIN =================
 
-    socket.on("login", (data) => {
+socket.on("login", ({ username, password }) => {
 
-        const { username, password } = data;
+if (!USERS[username] || USERS[username] !== password) {
 
-        if (!USERS[username] || USERS[username] !== password) {
-            socket.emit("login-failed", "❌ نام کاربری یا رمز اشتباه است");
-            return;
-        }
+socket.emit("login-result", {
+success: false,
+message: "نام کاربری یا رمز عبور اشتباه است."
+});
 
-        players[socket.id] = {
-            username,
-            country: null,
-            money: 100,
-            eliminated: false
-        };
+return;
+}
 
-        lobby.push({
-            id: socket.id,
-            username
-        });
+socket.username = username;
 
-        socket.emit("login-success", players[socket.id]);
+if (!lobby.includes(username)) {
+lobby.push(username);
+}
 
-        broadcastLobby();
+if (!players[username]) {
 
-        console.log("🔐 Login:", username);
-    });
+players[username] = {
 
-    // ================= SELECT COUNTRY =================
+username,
+socketId: socket.id,
 
-    socket.on("select-country", (countryKey) => {
+country: null,
 
-        const player = players[socket.id];
+health: 100,
+missiles: 0,
+bombs: 0,
+nukes: 0,
 
-        if (!player) return;
+money: 100,
 
-        if (!COUNTRIES[countryKey]) return;
+eliminated: false
 
-        player.country = countryKey;
+};
 
-        socket.emit("country-selected", COUNTRIES[countryKey]);
+} else {
 
-        console.log(`🌍 ${player.username} selected ${countryKey}`);
-    });
+players[username].socketId = socket.id;
 
-    // ================= START GAME =================
+}
 
-    socket.on("start-game", () => {
+socket.emit("login-result", {
+success: true,
+username
+});
 
-        if (gameStarted) return;
-
-        if (lobby.length < 2) {
-            socket.emit("error-msg", "❌ حداقل 2 بازیکن لازم است");
-            return;
-        }
-
-        gameStarted = true;
-
-        turnOrder = lobby.map(p => p.id);
-        turnIndex = 0;
-
-        io.emit("game-started", {
-            turn: currentTurn(),
-            countries: COUNTRIES
-        });
-
-        broadcastLobby();
-
-        console.log("🚀 Game Started!");
-    });
-
-    // ================= DISCONNECT =================
-
-    socket.on("disconnect", () => {
-
-        console.log("🔴 Disconnected:", socket.id);
-
-        lobby = lobby.filter(p => p.id !== socket.id);
-
-        delete players[socket.id];
-
-        broadcastLobby();
-    });
+broadcastLobby();
 
 });
-    // ================= BUY WEAPONS =================
 
-    socket.on("buy", (type) => {
+// ================= JOIN LOBBY =================
 
-        const player = players[socket.id];
-        if (!player || player.eliminated) return;
+socket.on("join-lobby", ({ username }) => {
 
-        const country = COUNTRIES[player.country];
-        if (!country) return;
+socket.username = username;
 
-        if (!PRICE[type]) return;
+if (!lobby.includes(username)) {
+lobby.push(username);
+}
 
-        if (player.money < PRICE[type]) {
-            socket.emit("error-msg", "❌ پول کافی نداری");
-            return;
-        }
+if (!players[username]) {
 
-        player.money -= PRICE[type];
-        country[type === "nuke" ? "nukes" : type + "s"]++;
+players[username] = {
 
-        io.emit("state-update", {
-            playerId: socket.id,
-            money: player.money,
-            country
-        });
+username,
+socketId: socket.id,
 
-        console.log(`💰 ${player.username} bought ${type}`);
-    });
+country: null,
 
-    // ================= ATTACK =================
+health: 100,
+missiles: 0,
+bombs: 0,
+nukes: 0,
 
-    socket.on("attack", (data) => {
+money: 100,
 
-        const attacker = players[socket.id];
-        if (!attacker || attacker.eliminated) return;
+eliminated: false
 
-        if (currentTurn() !== socket.id) {
-            socket.emit("error-msg", "❌ نوبت تو نیست");
-            return;
-        }
+};
 
-        const { targetId, type } = data;
+} else {
 
-        const target = players[targetId];
-        if (!target || target.eliminated) return;
+players[username].socketId = socket.id;
 
-        const attackerCountry = COUNTRIES[attacker.country];
-        const targetCountry = COUNTRIES[target.country];
+}
 
-        if (!attackerCountry || !targetCountry) return;
+broadcastLobby();
 
-        // check ammo
-        const ammoKey = type === "nuke" ? "nukes" : type + "s";
+});
 
-        if (attackerCountry[ammoKey] <= 0) {
-            socket.emit("error-msg", "❌ مهمات کافی نداری");
-            return;
-        }
+// ================= SELECT COUNTRY =================
 
-        attackerCountry[ammoKey]--;
+socket.on("select-country", (countryId) => {
 
-        const dmg = DAMAGE[type];
-        targetCountry.health -= dmg;
+const player = players[socket.username];
 
-        if (targetCountry.health <= 0) {
-            target.eliminated = true;
-            targetCountry.health = 0;
+if (!player) return;
 
-            io.emit("player-eliminated", targetId);
+if (!COUNTRIES[countryId]) return;
 
-            console.log("💀 Eliminated:", target.username);
-        }
+// جلوگیری از انتخاب تکراری کشور
+const taken = Object.values(players).find(
+p => p.country === countryId && p.username !== socket.username
+);
 
-        io.emit("attack-result", {
-            from: socket.id,
-            to: targetId,
-            type,
-            damage: dmg,
-            targetHealth: targetCountry.health
-        });
+if (taken) {
 
-        advanceTurn();
-    });
+socket.emit("error-message", "این کشور قبلاً انتخاب شده است.");
 
-    // ================= END TURN =================
+return;
+}
 
-    socket.on("end-turn", () => {
+const c = COUNTRIES[countryId];
 
-        if (currentTurn() !== socket.id) {
-            socket.emit("error-msg", "❌ الان نوبت تو نیست");
-            return;
-        }
+player.country = countryId;
+player.health = c.health;
+player.missiles = c.missiles;
+player.bombs = c.bombs;
+player.nukes = c.nukes;
+player.money = c.money;
 
-        advanceTurn();
-    });
+io.emit("player-update", players);
 
-    // ================= CHECK WINNER =================
+const ready = Object.values(players).filter(p => p.country);
 
-    function checkWinner() {
+if (ready.length >= 3 && !gameStarted) {
 
-        const alive = Object.values(players).filter(p => !p.eliminated);
+gameStarted = true;
 
-        if (alive.length === 1) {
+turnOrder = ready.map(p => p.username);
 
-            const winner = alive[0];
+turnIndex = 0;
 
-            io.emit("game-over", {
-                winner: winner.username
-            });
+io.emit("game-start", {
 
-            console.log("🏆 Winner:", winner.username);
+players,
+turn: currentTurn()
 
-            gameStarted = false;
-        }
-    }
+});
 
-    // run winner check after each attack
-    socket.on("attack", () => {
-        checkWinner();
-    });
-    // ================= RESET GAME =================
+io.emit("turn-update", currentTurn());
 
-    socket.on("reset-game", () => {
+broadcastLobby();
 
-        gameStarted = false;
-        players = {};
-        lobby = [];
-        turnOrder = [];
-        turnIndex = 0;
+}
 
-        // reset countries
-        Object.keys(COUNTRIES).forEach(key => {
-            COUNTRIES[key].health = 100;
-            COUNTRIES[key].missiles = 100;
-            COUNTRIES[key].bombs = 50;
-            COUNTRIES[key].nukes = 5;
-            COUNTRIES[key].money = 100;
-        });
+});
+// ================= ATTACK =================
 
-        io.emit("game-reset");
+socket.on("attack", ({ target, weapon, amount }) => {
 
-        console.log("🔄 Game Reset Complete");
-    });
+const attacker = socket.username;
 
-    // ================= HANDLE MID GAME LEAVE =================
+if (!gameStarted) return;
+if (currentTurn() !== attacker) return;
 
-    socket.on("disconnect", () => {
+const a = players[attacker];
+const t = players[target];
 
-        console.log("🔴 Disconnected:", socket.id);
+if (!a || !t) return;
+if (t.eliminated) return;
 
-        const player = players[socket.id];
+const count = parseInt(amount);
 
-        lobby = lobby.filter(p => p.id !== socket.id);
-        delete players[socket.id];
+if (isNaN(count) || count <= 0) return;
 
-        // if game is running, treat as elimination
-        if (gameStarted && player) {
+let stockKey = null;
 
-            const country = COUNTRIES[player.country];
+if (weapon === "missile") stockKey = "missiles";
+if (weapon === "bomb") stockKey = "bombs";
+if (weapon === "nuke") stockKey = "nukes";
 
-            if (country) {
-                country.health = 0;
-            }
+if (!stockKey) return;
 
-            io.emit("player-eliminated", socket.id);
+if (a[stockKey] < count) {
 
-            console.log("💀 Mid-game elimination:", player.username);
+socket.emit("error-message", "سلاح کافی نیست.");
 
-            checkWinner();
-            advanceTurn();
-        }
+return;
+}
 
-        broadcastLobby();
-    });
+a[stockKey] -= count;
 
-    // ================= DEBUG STATE =================
+t.health -= DAMAGE[weapon] * count;
 
-    socket.on("get-state", () => {
+if (t.health <= 0) {
 
-        socket.emit("state", {
-            players,
-            lobby,
-            turnOrder,
-            turnIndex,
-            gameStarted,
-            countries: COUNTRIES
-        });
+t.health = 0;
+t.eliminated = true;
 
-    });
+}
 
-    // ================= HEARTBEAT (SAFE KEEP) =================
+io.emit("player-update", players);
 
-    socket.on("ping-game", () => {
-        socket.emit("pong-game");
-    });
+advanceTurn();
+
+});
+
+// ================= BUY WEAPON =================
+
+socket.on("buy-weapon", ({ weapon, amount }) => {
+
+const p = players[socket.username];
+
+if (!p) return;
+
+const count = parseInt(amount);
+
+if (isNaN(count) || count <= 0) return;
+
+const cost = PRICE[weapon] * count;
+
+if (p.money < cost) {
+
+socket.emit("error-message", "پول کافی نیست.");
+
+return;
+}
+
+p.money -= cost;
+
+if (weapon === "missile") p.missiles += count;
+if (weapon === "bomb") p.bombs += count;
+if (weapon === "nuke") p.nukes += count;
+
+io.emit("player-update", players);
+
+});
+
+// ================= CHAT =================
+
+socket.on("chat-message", (message) => {
+
+if (!socket.username) return;
+
+io.emit("chat-message", {
+
+username: socket.username,
+message: message,
+time: Date.now()
+
+});
+
+});
+// ================= DISCONNECT =================
+
+socket.on("disconnect", () => {
+
+const username = socket.username;
+
+if (!username) return;
+
+console.log("🔴 Disconnected:", username);
+
+// حذف از لابی
+lobby = lobby.filter(name => name !== username);
+
+// حذف از بازیکنان
+delete players[username];
+
+// حذف از نوبت‌ها
+turnOrder = turnOrder.filter(name => name !== username);
+
+if (turnIndex >= turnOrder.length) {
+turnIndex = 0;
+}
+
+// اگر کسی نماند
+if (turnOrder.length === 0) {
+
+gameStarted = false;
+
+} else {
+
+io.emit("turn-update", currentTurn());
+
+}
+
+// بروزرسانی برای همه بازیکنان
+broadcastLobby();
+io.emit("player-update", players);
+
+});
 
 });
