@@ -82,46 +82,47 @@
 
 </div>
 
+<script src="/socket.io/socket.io.js"></script>
+
 <script>
+
+const socket = io();
 
 const username = localStorage.getItem("loggedUser");
 
-let selectedCountries = JSON.parse(localStorage.getItem("selectedCountries")) || {};
+if (!username) {
+    window.location.href = "login-makrishooma.html";
+}
+
+socket.emit("join-lobby", {
+    username: username
+});
 
 function selectCountry(country){
 
-if(Object.values(selectedCountries).includes(country)){
+    let id = "";
 
-document.getElementById("message").innerHTML="❌ این کشور قبلاً انتخاب شده است.";
+    if(country === "ایران") id = "iri";
+    if(country === "چین") id = "china";
+    if(country === "قزاقستان") id = "kazakhstan";
 
-return;
+    socket.emit("select-country", id);
 
+    document.getElementById("message").innerHTML =
+    "✅ کشور انتخاب شد. در انتظار سایر بازیکنان...";
 }
 
-selectedCountries[username]={
-country:country,
-health:100,
-money:100,
-missiles:100,
-bombs:country==="ایران"?55:45,
-nukes:country==="قزاقستان"?4:5
-};
+socket.on("error-message",(msg)=>{
 
-localStorage.setItem("selectedCountries",JSON.stringify(selectedCountries));
+    document.getElementById("message").innerHTML="❌ "+msg;
 
-document.getElementById("message").innerHTML="✅ کشور انتخاب شد. در انتظار سایر بازیکنان...";
+});
 
-if(Object.keys(selectedCountries).length>=3){
+socket.on("game-start",()=>{
 
-setTimeout(function(){
+    window.location.href="game-makrishooma.html";
 
-window.location.href="game-makrishooma.html";
-
-},1500);
-
-}
-
-}
+});
 
 </script>
 
