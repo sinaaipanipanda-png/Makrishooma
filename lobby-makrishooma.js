@@ -1,42 +1,85 @@
+const socket = io();
+
 document.addEventListener("DOMContentLoaded", () => {
 
-  const loggedUser = localStorage.getItem("loggedUser");
-  if (!loggedUser) {
-    window.location.href = "login-makrishooma.html";
-    return;
-  }
+    const loggedUser = localStorage.getItem("loggedUser");
 
-  const onlineCount = document.getElementById("onlineCount");
-  const message = document.getElementById("message");
-
-  let players = JSON.parse(localStorage.getItem("players")) || [];
-
-  if (!players.includes(loggedUser)) {
-    players.push(loggedUser);
-    localStorage.setItem("players", JSON.stringify(players));
-  }
-
-  onlineCount.textContent = players.length;
-
-  players.forEach((p, i) => {
-    const el = document.getElementById("player" + (i + 1));
-    if (el) {
-      el.innerHTML = `👤 ${p} <span style="color:lime;">✅ آماده</span>`;
+    if (!loggedUser) {
+        window.location.href = "login-makrishooma.html";
+        return;
     }
-  });
 
-  if (players.length >= 3) {
-    message.textContent = "🎮 همه بازیکنان آماده‌اند... شروع بازی";
-    setTimeout(() => {
-      window.location.href = "select-country-makrishooma.html";
-    }, 2000);
-  }
+    const onlineCount = document.getElementById("onlineCount");
+    const message = document.getElementById("message");
 
-  document.getElementById("leave").addEventListener("click", () => {
-    players = players.filter(p => p !== loggedUser);
-    localStorage.setItem("players", JSON.stringify(players));
-    localStorage.removeItem("loggedUser");
-    window.location.href = "home-makrishooma.html";
-  });
+    // ورود کاربر به لابی
+    socket.emit("join-lobby", {
+        username: loggedUser
+    });
+
+    // دریافت لیست بازیکنان
+    socket.on("lobby-update", (data) => {
+
+        const players = data.players || [];
+
+        if (onlineCount) {
+            onlineCount.textContent = players.length;
+        }
+
+        for (let i = 1; i <= 3; i++) {
+
+            const el = document.getElementById("player" + i);
+
+            if (!el) continue;
+
+            if (players[i - 1]) {
+
+                el.innerHTML =
+                    `👤 ${players[i - 1]} <span style="color:lime;">✅ آماده</span>`;
+
+            } else {
+
+                el.innerHTML =
+                    "⏳ در انتظار بازیکن...";
+
+            }
+
+        }
+
+        if (data.started) {
+
+            if (message) {
+                message.textContent =
+                    "🎮 همه بازیکنان آماده‌اند... شروع بازی";
+            }
+
+            setTimeout(() => {
+
+                window.location.href =
+                    "select-country-makrishooma.html";
+
+            }, 1500);
+
+        }
+
+    });
+
+    // خروج
+    const leaveBtn = document.getElementById("leave");
+
+    if (leaveBtn) {
+
+        leaveBtn.addEventListener("click", () => {
+
+            socket.disconnect();
+
+            localStorage.removeItem("loggedUser");
+
+            window.location.href =
+                "home-makrishooma.html";
+
+        });
+
+    }
 
 });
