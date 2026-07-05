@@ -15,6 +15,8 @@ const io = new Server(server, {
 
 const PORT = process.env.PORT || 3000;
 
+// ================= STATIC =================
+
 app.use(express.static(__dirname));
 
 app.get("/", (req, res) => {
@@ -32,6 +34,7 @@ const USERS = {
 // ================= COUNTRIES =================
 
 const COUNTRIES = {
+
     iri: {
         name: "🇮🇷 ایران",
         health: 100,
@@ -40,6 +43,7 @@ const COUNTRIES = {
         nukes: 5,
         money: 100
     },
+
     china: {
         name: "🇨🇳 چین",
         health: 100,
@@ -48,6 +52,7 @@ const COUNTRIES = {
         nukes: 5,
         money: 100
     },
+
     kazakhstan: {
         name: "🇰🇿 قزاقستان",
         health: 100,
@@ -56,6 +61,7 @@ const COUNTRIES = {
         nukes: 4,
         money: 100
     }
+
 };
 
 // ================= CONFIG =================
@@ -92,9 +98,7 @@ function broadcastLobby() {
 }
 
 function currentTurn() {
-
     return turnOrder[turnIndex] || null;
-
 }
 
 function advanceTurn() {
@@ -107,29 +111,30 @@ function advanceTurn() {
 
         turnIndex++;
 
-        if (turnIndex >= turnOrder.length)
+        if (turnIndex >= turnOrder.length) {
             turnIndex = 0;
+        }
 
         safe++;
 
     } while (
-
         safe < 100 &&
         players[turnOrder[turnIndex]] &&
         players[turnOrder[turnIndex]].eliminated
-
     );
 
     io.emit("turn-update", currentTurn());
 
 }
 
-// ================= START =================
+// ================= SERVER =================
 
 server.listen(PORT, () => {
 
-    console.log("🌍 Makrishooma Running");
+    console.log("==================================");
+    console.log("🌍 Makrishooma Server Started");
     console.log("🚀 Port:", PORT);
+    console.log("==================================");
 
 });
 
@@ -140,291 +145,285 @@ io.on("connection", (socket) => {
     console.log("🟢 Connected:", socket.id);
         // ================= LOGIN =================
 
-    socket.on("login", ({ username, password }) => {
+    socket.on("login", (data) => {
+
+        const { username, password } = data;
 
         if (!USERS[username] || USERS[username] !== password) {
-
-            socket.emit("login-result", {
-                success: false,
-                message: "نام کاربری یا رمز عبور اشتباه است."
-            });
-
+            socket.emit("login-failed", "❌ نام کاربری یا رمز اشتباه است");
             return;
         }
 
-        socket.username = username;
+        players[socket.id] = {
+            username,
+            country: null,
+            money: 100,
+            eliminated: false
+        };
 
-        if (!lobby.includes(username)) {
-            lobby.push(username);
-        }
-
-        if (!players[username]) {
-
-            players[username] = {
-
-                username,
-                socketId: socket.id,
-
-                country: null,
-
-                health: 100,
-
-                missiles: 0,
-                bombs: 0,
-                nukes: 0,
-
-                money: 100,
-
-                eliminated: false
-
-            };
-
-        } else {
-
-            players[username].socketId = socket.id;
-
-        }
-
-        socket.emit("login-result", {
-            success: true,
+        lobby.push({
+            id: socket.id,
             username
         });
 
-        broadcastLobby();
-
-    });
-
-    // ================= JOIN LOBBY =================
-
-    socket.on("join-lobby", ({ username }) => {
-
-        socket.username = username;
-
-        if (!lobby.includes(username)) {
-            lobby.push(username);
-        }
-
-        if (!players[username]) {
-
-            players[username] = {
-
-                username,
-                socketId: socket.id,
-
-                country: null,
-
-                health: 100,
-
-                missiles: 0,
-                bombs: 0,
-                nukes: 0,
-
-                money: 100,
-
-                eliminated: false
-
-            };
-
-        } else {
-
-            players[username].socketId = socket.id;
-
-        }
+        socket.emit("login-success", players[socket.id]);
 
         broadcastLobby();
 
+        console.log("🔐 Login:", username);
     });
 
     // ================= SELECT COUNTRY =================
 
-    socket.on("select-country", (countryId) => {
+    socket.on("select-country", (countryKey) => {
 
-        const p = players[socket.username];
+        const player = players[socket.id];
 
-        if (!p) return;
-        if (!COUNTRIES[countryId]) return;
+        if (!player) return;
 
-        const c = COUNTRIES[countryId];
+        if (!COUNTRIES[countryKey]) return;
 
-        p.country = countryId;
+        player.country = countryKey;
 
-        p.health = c.health;
-        p.missiles = c.missiles;
-        p.bombs = c.bombs;
-        p.nukes = c.nukes;
-        p.money = c.money;
+        socket.emit("country-selected", COUNTRIES[countryKey]);
 
-        io.emit("player-update", players);
-
-        const ready =
-            Object.values(players)
-            .filter(x => x.country);
-
-        if (ready.length >= 3 && !gameStarted) {
-
-            gameStarted = true;
-
-            turnOrder =
-                ready.map(x => x.username);
-
-            turnIndex = 0;
-
-            io.emit("game-start", {
-
-                players,
-                turn: currentTurn()
-
-            });
-
-            io.emit("turn-update", currentTurn());
-
-            broadcastLobby();
-
-        }
-
+        console.log(`🌍 ${player.username} selected ${countryKey}`);
     });
-        // ================= ATTACK =================
 
-    socket.on("attack", ({ target, weapon, amount }) => {
+    // ================= START GAME =================
 
-        const attacker = socket.username;
+    socket.on("start-game", () => {
 
-        if (!gameStarted) return;
-        if (currentTurn() !== attacker) return;
+        if (gameStarted) return;
 
-        const a = players[attacker];
-        const t = players[target];
-
-        if (!a || !t) return;
-        if (t.eliminated) return;
-
-        const count = parseInt(amount);
-
-        if (isNaN(count) || count <= 0) return;
-
-        let stock = null;
-
-        if (weapon === "missile") stock = "missiles";
-        if (weapon === "bomb") stock = "bombs";
-        if (weapon === "nuke") stock = "nukes";
-
-        if (!stock) return;
-
-        if (a[stock] < count) {
-
-            socket.emit("error-message", "سلاح کافی نیست.");
-
+        if (lobby.length < 2) {
+            socket.emit("error-msg", "❌ حداقل 2 بازیکن لازم است");
             return;
-
         }
 
-        a[stock] -= count;
+        gameStarted = true;
 
-        const damage = DAMAGE[weapon] * count;
+        turnOrder = lobby.map(p => p.id);
+        turnIndex = 0;
 
-        t.health -= damage;
-
-        if (t.health <= 0) {
-
-            t.health = 0;
-            t.eliminated = true;
-
-        }
-
-        io.emit("player-update", players);
-
-        advanceTurn();
-
-    });
-
-    // ================= BUY =================
-
-    socket.on("buy-weapon", ({ weapon, amount }) => {
-
-        const p = players[socket.username];
-
-        if (!p) return;
-
-        const count = parseInt(amount);
-
-        if (isNaN(count) || count <= 0) return;
-
-        const cost = PRICE[weapon] * count;
-
-        if (p.money < cost) {
-
-            socket.emit("error-message", "پول کافی نیست.");
-
-            return;
-
-        }
-
-        p.money -= cost;
-
-        if (weapon === "missile")
-            p.missiles += count;
-
-        if (weapon === "bomb")
-            p.bombs += count;
-
-        if (weapon === "nuke")
-            p.nukes += count;
-
-        io.emit("player-update", players);
-
-    });
-
-    // ================= CHAT =================
-
-    socket.on("chat-message", (message) => {
-
-        if (!socket.username) return;
-
-        io.emit("chat-message", {
-
-            username: socket.username,
-
-            message,
-
-            time: Date.now()
-
+        io.emit("game-started", {
+            turn: currentTurn(),
+            countries: COUNTRIES
         });
-
-    });
-        // ================= DISCONNECT =================
-
-    socket.on("disconnect", () => {
-
-        const username = socket.username;
-
-        if (!username) return;
-
-        console.log("🔴 Disconnected:", username);
-
-        lobby = lobby.filter(u => u !== username);
-
-        if (players[username]) {
-            delete players[username];
-        }
-
-        turnOrder = turnOrder.filter(u => u !== username);
-
-        if (turnIndex >= turnOrder.length) {
-            turnIndex = 0;
-        }
-
-        if (turnOrder.length === 0) {
-            gameStarted = false;
-        }
 
         broadcastLobby();
 
-        io.emit("player-update", players);
+        console.log("🚀 Game Started!");
+    });
 
-        if (gameStarted) {
-            io.emit("turn-update", currentTurn());
+    // ================= DISCONNECT =================
+
+    socket.on("disconnect", () => {
+
+        console.log("🔴 Disconnected:", socket.id);
+
+        lobby = lobby.filter(p => p.id !== socket.id);
+
+        delete players[socket.id];
+
+        broadcastLobby();
+    });
+
+});
+    // ================= BUY WEAPONS =================
+
+    socket.on("buy", (type) => {
+
+        const player = players[socket.id];
+        if (!player || player.eliminated) return;
+
+        const country = COUNTRIES[player.country];
+        if (!country) return;
+
+        if (!PRICE[type]) return;
+
+        if (player.money < PRICE[type]) {
+            socket.emit("error-msg", "❌ پول کافی نداری");
+            return;
         }
 
+        player.money -= PRICE[type];
+        country[type === "nuke" ? "nukes" : type + "s"]++;
+
+        io.emit("state-update", {
+            playerId: socket.id,
+            money: player.money,
+            country
+        });
+
+        console.log(`💰 ${player.username} bought ${type}`);
+    });
+
+    // ================= ATTACK =================
+
+    socket.on("attack", (data) => {
+
+        const attacker = players[socket.id];
+        if (!attacker || attacker.eliminated) return;
+
+        if (currentTurn() !== socket.id) {
+            socket.emit("error-msg", "❌ نوبت تو نیست");
+            return;
+        }
+
+        const { targetId, type } = data;
+
+        const target = players[targetId];
+        if (!target || target.eliminated) return;
+
+        const attackerCountry = COUNTRIES[attacker.country];
+        const targetCountry = COUNTRIES[target.country];
+
+        if (!attackerCountry || !targetCountry) return;
+
+        // check ammo
+        const ammoKey = type === "nuke" ? "nukes" : type + "s";
+
+        if (attackerCountry[ammoKey] <= 0) {
+            socket.emit("error-msg", "❌ مهمات کافی نداری");
+            return;
+        }
+
+        attackerCountry[ammoKey]--;
+
+        const dmg = DAMAGE[type];
+        targetCountry.health -= dmg;
+
+        if (targetCountry.health <= 0) {
+            target.eliminated = true;
+            targetCountry.health = 0;
+
+            io.emit("player-eliminated", targetId);
+
+            console.log("💀 Eliminated:", target.username);
+        }
+
+        io.emit("attack-result", {
+            from: socket.id,
+            to: targetId,
+            type,
+            damage: dmg,
+            targetHealth: targetCountry.health
+        });
+
+        advanceTurn();
+    });
+
+    // ================= END TURN =================
+
+    socket.on("end-turn", () => {
+
+        if (currentTurn() !== socket.id) {
+            socket.emit("error-msg", "❌ الان نوبت تو نیست");
+            return;
+        }
+
+        advanceTurn();
+    });
+
+    // ================= CHECK WINNER =================
+
+    function checkWinner() {
+
+        const alive = Object.values(players).filter(p => !p.eliminated);
+
+        if (alive.length === 1) {
+
+            const winner = alive[0];
+
+            io.emit("game-over", {
+                winner: winner.username
+            });
+
+            console.log("🏆 Winner:", winner.username);
+
+            gameStarted = false;
+        }
+    }
+
+    // run winner check after each attack
+    socket.on("attack", () => {
+        checkWinner();
+    });
+    // ================= RESET GAME =================
+
+    socket.on("reset-game", () => {
+
+        gameStarted = false;
+        players = {};
+        lobby = [];
+        turnOrder = [];
+        turnIndex = 0;
+
+        // reset countries
+        Object.keys(COUNTRIES).forEach(key => {
+            COUNTRIES[key].health = 100;
+            COUNTRIES[key].missiles = 100;
+            COUNTRIES[key].bombs = 50;
+            COUNTRIES[key].nukes = 5;
+            COUNTRIES[key].money = 100;
+        });
+
+        io.emit("game-reset");
+
+        console.log("🔄 Game Reset Complete");
+    });
+
+    // ================= HANDLE MID GAME LEAVE =================
+
+    socket.on("disconnect", () => {
+
+        console.log("🔴 Disconnected:", socket.id);
+
+        const player = players[socket.id];
+
+        lobby = lobby.filter(p => p.id !== socket.id);
+        delete players[socket.id];
+
+        // if game is running, treat as elimination
+        if (gameStarted && player) {
+
+            const country = COUNTRIES[player.country];
+
+            if (country) {
+                country.health = 0;
+            }
+
+            io.emit("player-eliminated", socket.id);
+
+            console.log("💀 Mid-game elimination:", player.username);
+
+            checkWinner();
+            advanceTurn();
+        }
+
+        broadcastLobby();
+    });
+
+    // ================= DEBUG STATE =================
+
+    socket.on("get-state", () => {
+
+        socket.emit("state", {
+            players,
+            lobby,
+            turnOrder,
+            turnIndex,
+            gameStarted,
+            countries: COUNTRIES
+        });
+
+    });
+
+    // ================= HEARTBEAT (SAFE KEEP) =================
+
+    socket.on("ping-game", () => {
+        socket.emit("pong-game");
     });
 
 });
