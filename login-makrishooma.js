@@ -1,33 +1,45 @@
-const users = [
-  { username: "alikhodadady", password: "1801" },
-  { username: "takinakbary", password: "5108" },
-  { username: "sinaayati", password: "4023" }
-];
+const socket = io();
 
 document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("loginForm");
-  const error = document.getElementById("errorMessage");
-  const back = document.getElementById("backHome");
 
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
+    const form = document.getElementById("loginForm");
+    const error = document.getElementById("errorMessage");
+    const back = document.getElementById("backHome");
 
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value.trim();
+    form.addEventListener("submit", (e) => {
 
-    const user = users.find(
-      u => u.username === username && u.password === password
-    );
+        e.preventDefault();
 
-    if (user) {
-      localStorage.setItem("loggedUser", username);
-      window.location.href = "lobby-makrishooma.html";
-    } else {
-      error.textContent = "❌ نام کاربری یا رمز عبور اشتباه است";
-    }
-  });
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
 
-  back.addEventListener("click", () => {
-    window.location.href = "home-makrishooma.html";
-  });
+        socket.emit("login", {
+            username,
+            password
+        });
+
+    });
+
+    socket.on("login-result", (result) => {
+
+        if (result.success) {
+
+            localStorage.setItem("loggedUser", result.username);
+
+            window.location.href = "lobby-makrishooma.html";
+
+        } else {
+
+            error.textContent = result.message;
+
+        }
+
+    });
+
+    back.addEventListener("click", () => {
+
+        window.location.href = "home-makrishooma.html";
+
+    });
+
 });
