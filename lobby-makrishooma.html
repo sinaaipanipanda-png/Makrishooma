@@ -63,50 +63,56 @@
 
 <script src="/socket.io/socket.io.js"></script>
 
+<script src="/socket.io/socket.io.js"></script>
+
 <script>
+
 const socket = io();
 
-const loggedUser = localStorage.getItem("loggedUser");
+const username = localStorage.getItem("loggedUser");
 
-if (!loggedUser) {
+if (!username) {
     window.location.href = "login-makrishooma.html";
 }
 
-socket.emit("join-lobby", {
-    username: loggedUser
-});
+// وصل شدن به سرور لابی
+socket.emit("join-lobby", { username });
 
 socket.on("lobby-update", (data) => {
 
-    document.getElementById("onlineCount").innerText = data.players.length;
+    const players = data.players;
 
+    document.getElementById("onlineCount").innerText = players.length;
+
+    // ریست UI
     for (let i = 1; i <= 3; i++) {
         document.getElementById("player" + i).innerHTML =
             "👤 بازیکن " + i +
             ' <span class="status waiting">⏳ منتظر...</span>';
     }
 
-    data.players.forEach((name, index) => {
+    // پر کردن لیست واقعی
+    players.forEach((p, i) => {
 
-        const el = document.getElementById("player" + (index + 1));
+        const el = document.getElementById("player" + (i + 1));
 
         if (el) {
             el.innerHTML =
-                "👤 " + name +
+                "👤 " + p +
                 ' <span style="color:lime;">✅ آماده</span>';
         }
 
     });
 
-    if (data.players.length >= 3) {
+    // شروع بازی
+    if (players.length >= 3) {
 
-        document.getElementById("message").innerHTML =
-        "🎮 همه بازیکنان وارد شدند. انتقال به انتخاب کشور...";
+        document.getElementById("message").innerText =
+            "🎮 همه بازیکنان وارد شدند... انتقال به انتخاب کشور";
 
         setTimeout(() => {
-            window.location.href = "select-country-makrishoma.html";
+            window.location.href = "select-country-makrishooma.html";
         }, 1500);
-
     }
 
 });
@@ -115,9 +121,9 @@ document.getElementById("leave").onclick = () => {
 
     localStorage.removeItem("loggedUser");
 
-    location.href = "login-makrishooma.html";
-
+    window.location.href = "login-makrishooma.html";
 };
+
 </script>
 
 </body>
