@@ -61,52 +61,63 @@
 
 </div>
 
+<script src="/socket.io/socket.io.js"></script>
+
 <script>
+const socket = io();
 
 const loggedUser = localStorage.getItem("loggedUser");
 
-let players = JSON.parse(localStorage.getItem("players")) || [];
-
-if(!players.includes(loggedUser)){
-players.push(loggedUser);
-localStorage.setItem("players",JSON.stringify(players));
+if (!loggedUser) {
+    window.location.href = "login-makrishooma.html";
 }
 
-document.getElementById("onlineCount").textContent = players.length;
+socket.emit("join-lobby", {
+    username: loggedUser
+});
 
-for(let i=0;i<players.length;i++){
+socket.on("lobby-update", (data) => {
 
-document.getElementById("player"+(i+1)).innerHTML=
-"👤 "+players[i]+
-' <span style="color:lime;">✅ آماده</span>';
+    document.getElementById("onlineCount").innerText = data.players.length;
 
-}
+    for (let i = 1; i <= 3; i++) {
+        document.getElementById("player" + i).innerHTML =
+            "👤 بازیکن " + i +
+            ' <span class="status waiting">⏳ منتظر...</span>';
+    }
 
-if(players.length>=3){
+    data.players.forEach((name, index) => {
 
-document.getElementById("message").innerHTML=
-"🎮 همه بازیکنان وارد شدند. انتقال به انتخاب کشور...";
+        const el = document.getElementById("player" + (index + 1));
 
-setTimeout(function(){
+        if (el) {
+            el.innerHTML =
+                "👤 " + name +
+                ' <span style="color:lime;">✅ آماده</span>';
+        }
 
-window.location.href="select-country-makrishooma.html";
+    });
 
-},3000);
+    if (data.players.length >= 3) {
 
-}
+        document.getElementById("message").innerHTML =
+        "🎮 همه بازیکنان وارد شدند. انتقال به انتخاب کشور...";
 
-document.getElementById("leave").onclick=function(){
+        setTimeout(() => {
+            window.location.href = "select-country-makrishoma.html";
+        }, 1500);
 
-players=players.filter(p=>p!==loggedUser);
+    }
 
-localStorage.setItem("players",JSON.stringify(players));
+});
 
-localStorage.removeItem("loggedUser");
+document.getElementById("leave").onclick = () => {
 
-window.location.href="login-makrishooma.html";
+    localStorage.removeItem("loggedUser");
 
-}
+    location.href = "login-makrishooma.html";
 
+};
 </script>
 
 </body>
